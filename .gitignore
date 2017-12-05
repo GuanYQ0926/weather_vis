@@ -1,0 +1,8 @@
+/js/asset/
+/js/node_modules/
+/js/dist/
+/js/.DS_Store
+/py/data/
+/py/.DS_Store
+.DS_Store
+.tern-project
