@@ -23,12 +23,7 @@ export default{
 }
 .line {
     fill: none;
-    stroke: #EF5285;
-    stroke-width: 2px;
-    clip-path: url(#clip);
-}
-.area {
-    fill: #EF5285;
+    stroke-width: 1px;
     clip-path: url(#clip);
 }
 </style>

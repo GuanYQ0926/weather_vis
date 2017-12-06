@@ -1,10 +1,8 @@
 import os
 import json
-import numpy as np
 from flask import Flask
 from flask_restful import abort, Api, Resource
 from functools import wraps
-from ccm import CCM
 
 
 app = Flask(__name__)
@@ -52,29 +50,23 @@ class Resource(Resource):
     method_decorators = [cors]
 
 
-def calculateCCM(dataset, data):
-    pass
-
-
 class DataResource(Resource):
 
     def get(self, parameters):
-        lat_lon = parameters.split('_')
-        lat = round(float(lat_lon[0]) * 5) / 5
-        lon = round(float(lat_lon[1]) * 5) / 5
-        lat_lon = str(lat) + '_' + str(lon)
         try:
-            data = datasetpart[lat_lon]
-            return calculateCCM(datasetpart, data)
+            params = parameters.split('&')
+            params = [p.split('=')[1] for p in params]
+            with open('../data/json/' + params[1] + '.json', 'r') as f:
+                data1 = json.load(f)
+            with open('../data/json/' + params[2] + '.json', 'r') as f:
+                data2 = json.load(f)
+            return [data1, data2]
         except:
-            abort(404, message="data in {} doesn't exist".format(lat_lon))
+            abort(404, message="data doesn't exist")
 
 
 api.add_resource(DataResource, '/data/<parameters>')
 
 if __name__ == '__main__':
-    jsonDataPath = '../data/json/datasetpart.json'
-    with open(jsonDataPath, 'r') as f:
-        datasetpart = json.load(f)
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)

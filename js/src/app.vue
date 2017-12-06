@@ -6,7 +6,7 @@
             <v-tilelayer :url="boundary"></v-tilelayer>
             <canvas id="ccm" ref="ccm"></canvas>
         </v-map>
-        <el-select v-model="city" filterable placeholder="select city">
+        <el-select v-model="city" filterable placeholder="東京">
             <el-option
                 v-for="city in cities"
                 :key="city.value"
@@ -14,7 +14,7 @@
                 :value="city.value">
             </el-option>
         </el-select>
-        <el-select v-model="factor1" placeholder="select">
+        <el-select v-model="factor1" placeholder="temperature">
             <el-option
                 v-for="factor in factors"
                 :key="factor.value"
@@ -22,7 +22,7 @@
                 :value="factor.value">
             </el-option>
         </el-select>
-        <el-select v-model="factor2" placeholder="select">
+        <el-select v-model="factor2" placeholder="temperature">
             <el-option
                 v-for="factor in factors"
                 :key="factor.value"
@@ -54,17 +54,17 @@ export default{
         height: window.innerHeight,
         ccm_data: [],
         factors: [
-            {value: 'temp', label: 'temperature'},
-            {value: 'rain', label: 'rianfall'},
-            {value: 'air', label: 'air-pressure'},
+            {value: 'temperature', label: 'temperature'},
+            {value: 'rainfall', label: 'rianfall'},
+            {value: 'windspeed', label: 'wind-speed'},
+            {value: 'vaporpressure', label: 'vapor-pressure'},
+            {value: 'cloud', label: 'cloud'}
         ],
-        factor1: '',
-        factor2: '',
+        factor1: 'temperature',
+        factor2: 'temperature',
         cities: [
             {value: 'Tokyo', label: '東京', lat: 35.68944, lon: 139.69167},
             {value: 'Yokohama', label: '横浜', lat: 35.44778, lon: 139.6425},
-            {value: 'Niigata', label: '新潟', lat: 37.90222,lon: 139.02361},
-            {value: 'Saitama', label: 'さいたま', lat: 35.85694, lon: 139.64889},
             {value: 'Chiba', label: '千葉', lat: 35.60472, lon: 140.12333},
             {value: 'Gifu', label: '岐阜', lat: 35.39111,lon: 136.72222},
             {value: 'Kyoto', label: '京都', lat: 35.02139, lon: 135.75556},
@@ -73,23 +73,25 @@ export default{
             {value: 'Nara', label: '奈良', lat: 34.68528, lon: 135.83278},
             {value: 'Nagoya', label: '名古屋', lat: 35.18028, lon: 136.90667}
         ],
-        city: '',
+        city: 'Tokyo',
     }),
     methods: {
         onClick(e) {
+            this.drawCcmmap()
             const params = new URLSearchParams()
             params.set('city', this.city)
             params.set('factor1', this.factor1)
             params.set('factor2', this.factor2)
             const url = `http://0.0.0.0:5000/data/${params.toString()}`
             console.log(url)
-            //this.requestToServer(url)
+            this.requestToServer(url)
         },
         onZoomstart() {
             this.$refs.ccm.style.opacity = 0
             console.log('zoom start')
         },
         onZoomend() {
+            this.drawCcmmap()
             this.$refs.ccm.style.opacity = 1
             console.log('zoom end')
         },
@@ -98,44 +100,26 @@ export default{
             console.log('move start')
         },
         onMoveend() {
+            this.drawCcmmap()
             this.$refs.ccm.style.opacity = 1
             console.log('move end');
         },
-        drawHeatmap(heat_data) {
-            this.$refs.heat.width = this.width
-            this.$refs.heat.height = this.height
-            this.$refs.heat.getContext('2d').clearRect(0, 0, this.width, this.height)
-            heat_data.forEach(d => {
-                const latlon = d[0].split('_')
-                const nw = this.$refs.basemap.mapObject.latLngToContainerPoint([+latlon[0]-0.1, +latlon[1]+0.1])
-                const se = this.$refs.basemap.mapObject.latLngToContainerPoint([+latlon[0]+0.1, +latlon[1]-0.1])
-                this.$refs.heat.getContext('2d').fillStyle = `hsla(${(1-d[1])*150}, 50%, 80%, ${d[1] / 2 + 0.3})`
-                this.$refs.heat.getContext('2d').fillRect(nw.x, nw.y, se.x-nw.x, se.y-nw.y)
-            })
-            const marker = new Image()
-            marker.src = '../asset/marker.png'
-            const xy = this.$refs.basemap.mapObject.latLngToContainerPoint(this.click_pos)
-            const marker_width = this.$refs.basemap.mapObject.getZoom()/0.41
-            const marker_height = this.$refs.basemap.mapObject.getZoom()/0.25
-            marker.onload = () => {
-                this.$refs.heat.getContext('2d').drawImage(marker, xy.x-marker_width/2, xy.y-marker_height, marker_width, marker_height);
-            }
-            console.log('draw done');
-        },
         drawCcmmap() {
-            this.$refs.ccm.getContext('2d')
+            this.$refs.ccm.width = this.width
+            this.$refs.ccm.height = this.height
+            this.$refs.ccm.getContext('2d').clearRect(0, 0, this.width, this.height)
+            this.cities.forEach(c => {
+                const point = this.$refs.basemap.mapObject.latLngToContainerPoint([c.lat, c.lon])
+                this.$refs.ccm.getContext('2d').fillStyle = `hsla(600, 50%, 80%, 1)`
+                this.$refs.ccm.getContext('2d').fillRect(point.x, point.y, 10, 10)
+            })
         },
         requestToServer(url) {
             axios.get(url)
             .then(res => {
                 const data = res.data
-                this.ccm_data = data['']
+                this.eventHub.$emit('initLinechartScene', data)
             })
-        },
-        drawLinechart() {
-            //const data = fetch('').then(res => res.json())
-            const data = []
-            this.eventHub.$emit('initLinechartScene', data)
         }
     },
     watch: {
