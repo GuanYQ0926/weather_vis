@@ -16,14 +16,17 @@ export default{
 </script>
 
 <style>
-.zoom {
-    cursor: move;
-    fill: none;
-    pointer-events: all;
-}
 .line {
     fill: none;
     stroke-width: 1px;
     clip-path: url(#clip);
+}
+.cell {
+}
+.legend {
+    /*fill: steelblue;*/
+}
+.label {
+    font-size: 10px;
 }
 </style>

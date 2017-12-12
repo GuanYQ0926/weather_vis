@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats.stats import pearsonr
 import matplotlib.pyplot as plt
-import json
+import skccm.data as data
 
 
 class CCM(object):
@@ -19,23 +19,23 @@ class CCM(object):
         # if selected = data1, select all data
         self.selected = []  # indice of randomly selected data
         self.indices = []
-        self.distances = [[0 for x in xrange(self.manifold_len)]
-                          for y in xrange(self.manifold_len)]
+        self.distances = [[0 for x in range(self.manifold_len)]
+                          for y in range(self.manifold_len)]
         self.weights = []
         self.estimate_y = []
         self.correlation = 0
 
     def shadowManifold(self):
-        for i in xrange(self.first - 1, self.last):
+        for i in range(self.first - 1, self.last):
             vector = []
-            for e in xrange(self.dimension_E):
+            for e in range(self.dimension_E):
                 vector.append(self.data1[i - e * self.delta_T])
             self.manifold.append(vector)
         self.manifold = np.array(self.manifold)
 
     def nearestNeighbors(self):
-        for i in xrange(self.manifold_len):
-            for j in xrange(self.manifold_len):
+        for i in range(self.manifold_len):
+            for j in range(self.manifold_len):
                 dist = sum((self.manifold[i] - self.manifold[j])**2.0)**0.5
                 self.distances[i][j] = dist
                 self.distances[j][i] = dist
@@ -86,22 +86,25 @@ class CCM(object):
 
 
 if __name__ == '__main__':
-    with open('../data/temperature.json', 'r') as f:
-        data = json.load(f)
-    kyoto = data['1']
-    other = data['40']
-    start, end, interval = 329, 330, 1
-    ccm = []
-    for i in xrange(start, end, interval):
-        tmp_k, tmp_o = kyoto[:i], other[:i]
-        tmp_ccm = CCM(tmp_k, tmp_o)
-        tmp_ccm.calculate()
-        ccm.append(tmp_ccm.correlation)
-    xs = range(start, end, interval)
-    f, ax = plt.subplots()
-    ax.set_title('other->kyoto')
-    ax.set_xlabel('library size')
-    ax.set_ylabel('coefficient')
-    line, = ax.plot(xs, ccm, 'r', lw=1, label='other->kyoto')
-    line, = ax.plot(xs, ccm[::-1], 'b', lw=1, label='other->kyoto')
+    rx1 = 3.72  # determines chaotic behavior of the x1 series
+    rx2 = 3.72  # determines chaotic behavior of the x2 series
+    b12 = 0.2  # Influence of x1 on x2
+    b21 = 0.01  # Influence of x2 on x1
+    ts_length = 1000
+    x1, x2 = data.coupled_logistic(rx1, rx2, b12, b21, ts_length)
+    len_tr = 749
+    lib_lens = np.arange(10, len_tr, len_tr / 20, dtype='int')
+    res1 = []
+    res2 = []
+    for i in lib_lens:
+        d1 = x1[:i]
+        d2 = x2[:i]
+        ccm1 = CCM(d1, d2)
+        ccm1.calculate()
+        res1.append(ccm1.correlation)
+        ccm2 = CCM(d2, d1)
+        ccm2.calculate()
+        res2.append(ccm2.correlation)
+    xs = range(len(lib_lens))
+    plt.plot(xs, res1, 'r', xs, res2, 'g', lw=1)
     plt.show()

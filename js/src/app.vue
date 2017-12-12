@@ -6,7 +6,7 @@
             <v-tilelayer :url="boundary"></v-tilelayer>
             <canvas id="ccm" ref="ccm"></canvas>
         </v-map>
-        <el-select v-model="city" filterable placeholder="東京">
+        <el-select v-model="city" filterable placeholder="東京" size="mini" no-match-text="No matching data">
             <el-option
                 v-for="city in cities"
                 :key="city.value"
@@ -14,15 +14,16 @@
                 :value="city.value">
             </el-option>
         </el-select>
-        <el-select v-model="factor1" placeholder="temperature">
+        <el-select v-model="factor1" placeholder="temperature" size="mini">
             <el-option
                 v-for="factor in factors"
                 :key="factor.value"
                 :label="factor.label"
                 :value="factor.value">
             </el-option>
-        </el-select>
-        <el-select v-model="factor2" placeholder="temperature">
+        </el-select><br/>
+        <el-select v-model="allcities" disabled placeholder="all cities" size="mini"></el-select>
+        <el-select v-model="factor2" placeholder="temperature" size="mini">
             <el-option
                 v-for="factor in factors"
                 :key="factor.value"
@@ -36,6 +37,7 @@
 
 <script>
 import axios from 'axios'
+import $ from 'jquery'
 import Linechart from './components/linechartView.vue'
 
 export default{
@@ -43,9 +45,9 @@ export default{
         linechart: Linechart,
     },
     data: () => ({
-        zoom: 6,
+        zoom: 7,
         minZoom: 4,
-        maxZoom: 12,
+        maxZoom: 14,
         center: [35, 136],
         //url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
         url: 'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
@@ -61,7 +63,7 @@ export default{
             {value: 'cloud', label: 'cloud'}
         ],
         factor1: 'temperature',
-        factor2: 'temperature',
+        factor2: 'rainfall',
         cities: [
             {value: 'Tokyo', label: '東京', lat: 35.68944, lon: 139.69167},
             {value: 'Yokohama', label: '横浜', lat: 35.44778, lon: 139.6425},
@@ -74,6 +76,7 @@ export default{
             {value: 'Nagoya', label: '名古屋', lat: 35.18028, lon: 136.90667}
         ],
         city: 'Tokyo',
+        allcities: ''
     }),
     methods: {
         onClick(e) {
@@ -83,7 +86,6 @@ export default{
             params.set('factor1', this.factor1)
             params.set('factor2', this.factor2)
             const url = `http://0.0.0.0:5000/data/${params.toString()}`
-            console.log(url)
             this.requestToServer(url)
         },
         onZoomstart() {
@@ -110,11 +112,12 @@ export default{
             this.$refs.ccm.getContext('2d').clearRect(0, 0, this.width, this.height)
             this.cities.forEach(c => {
                 const point = this.$refs.basemap.mapObject.latLngToContainerPoint([c.lat, c.lon])
-                this.$refs.ccm.getContext('2d').fillStyle = `hsla(600, 50%, 80%, 1)`
+                this.$refs.ccm.getContext('2d').fillStyle = '#dc143c'//`hsla(200, 100%, 80%, 1)`
                 this.$refs.ccm.getContext('2d').fillRect(point.x, point.y, 10, 10)
             })
         },
         requestToServer(url) {
+            $('#linechart').empty()
             axios.get(url)
             .then(res => {
                 const data = res.data

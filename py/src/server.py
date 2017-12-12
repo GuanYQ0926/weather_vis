@@ -53,14 +53,22 @@ class Resource(Resource):
 class DataResource(Resource):
 
     def get(self, parameters):
-        try:
+        try:  # params: city&factor1&factor2
             params = parameters.split('&')
             params = [p.split('=')[1] for p in params]
             with open('../data/json/' + params[1] + '.json', 'r') as f:
-                data1 = json.load(f)
+                city = params[0]
+                data = json.load(f)
+                data1 = []
+                for d in data:
+                    data1.append({'value': d[city], 'date': d['date']})
             with open('../data/json/' + params[2] + '.json', 'r') as f:
                 data2 = json.load(f)
-            return [data1, data2]
+            with open('../data/ccm/ccm.json', 'r') as f:
+                # {Tokyo: {rainfall: {temperature: [kyoto: 1, nagoya: 1]} }}
+                data = json.load(f)
+                data3 = data[params[0]][params[1]][params[2]]
+            return [data1, data2, data3]
         except:
             abort(404, message="data doesn't exist")
 
