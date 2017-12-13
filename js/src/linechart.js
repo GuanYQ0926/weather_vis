@@ -22,6 +22,9 @@ export default class Linechart{
         this.dst_num = -1
     }
     initScene(data){
+        this.src_range = {'min': 1000, 'max': -1000}
+        this.dst_range = {'min': 1000, 'max': -1000}
+        this.dst_num = -1
         this.src = data[0]
         this.dst = data[1]
         const parseTime = d3.timeParse('%Y/%-m/%-d')
