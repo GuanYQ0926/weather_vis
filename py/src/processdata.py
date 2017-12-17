@@ -11,6 +11,7 @@ def csvToCMMJson():
                  'Nagoya', 'Yokohama', 'Tokyo', 'Chiba']
     factor_list = ['cloud', 'rainfall',  # 4
                    'temperature', 'vaporpressure', 'windspeed']
+    # sequence of city_list and factor_list is not changable
     dataset = collections.defaultdict(list)
     for factor in factor_list:
         src_file = '../data/raw/' + factor + '.csv'
@@ -40,17 +41,17 @@ def csvToCMMJson():
         for factor1 in factor_list:
             dictionary2 = {}
             for factor2 in factor_list:
-                array = []
+                array = {}
                 for city2 in city_list:
                     if city1 == city2 and factor1 == factor2:
                         continue
                     data1 = np.array(dataset[factor1][city1])
                     data2 = np.array(dataset[factor2][city2])
                     if len(data1) == 0 or len(data2) == 0:
-                        sc1 = 0
+                        sc1 = [0]
                     else:
-                        sc1, _ = calculateCCM(data1, data2)
-                    array.append({city2: sc1})
+                        sc1, _ = calculateCCM(data1, data2)  # sc1 type: list
+                    array[city2] = sc1[0]
                 dictionary2[factor2] = array
             dictionary1[factor1] = dictionary2
         results[city1] = dictionary1

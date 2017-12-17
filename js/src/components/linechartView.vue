@@ -21,11 +21,6 @@ export default{
     stroke-width: 1px;
     clip-path: url(#clip);
 }
-.cell {
-}
-.legend {
-    /*fill: steelblue;*/
-}
 .label {
     font-size: 10px;
 }

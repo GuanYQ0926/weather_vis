@@ -1,11 +1,5 @@
 <template>
     <div id="app">
-        <v-map ref="basemap" :zoom="zoom" :minZoom="minZoom" :maxZoom="maxZoom" :center="center" @l-click="onClick"
-               @l-zoomstart="onZoomstart" @l-zoomend="onZoomend" @l-movestart="onMovestart" @l-moveend="onMoveend">
-            <v-tilelayer :url="url"></v-tilelayer>
-            <v-tilelayer :url="boundary"></v-tilelayer>
-            <canvas id="ccm" ref="ccm"></canvas>
-        </v-map>
         <el-select v-model="city" filterable placeholder="東京" size="mini" no-match-text="No matching data">
             <el-option
                 v-for="city in cities"
@@ -21,7 +15,8 @@
                 :label="factor.label"
                 :value="factor.value">
             </el-option>
-        </el-select><br/>
+        </el-select>
+        <el-button size="mini" plain @click='onClick'><i class="el-icon-check"></i></el-button>
         <el-select v-model="allcities" disabled placeholder="all cities" size="mini"></el-select>
         <el-select v-model="factor2" placeholder="temperature" size="mini">
             <el-option
@@ -31,6 +26,10 @@
                 :value="factor.value">
             </el-option>
         </el-select>
+        <v-map ref="basemap" :zoom="zoom" :center="center">
+            <v-tilelayer :url="url"></v-tilelayer>
+            <canvas id="ccm" ref="ccm"></canvas>
+        </v-map>
         <linechart></linechart>
     </div>
 </template>
@@ -38,6 +37,8 @@
 <script>
 import axios from 'axios'
 import $ from 'jquery'
+import colormap from 'colormap'
+import Chart from 'chart.js'
 import Linechart from './components/linechartView.vue'
 
 export default{
@@ -45,15 +46,15 @@ export default{
         linechart: Linechart,
     },
     data: () => ({
-        zoom: 7,
+        zoom: 8,
         minZoom: 4,
         maxZoom: 14,
         center: [35, 136],
         //url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-        url: 'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
-        boundary: 'https://korona.geog.uni-heidelberg.de/tiles/adminb/x={x}&y={y}&z={z}',
+        //'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+        url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
         width: window.innerWidth/2,
-        height: window.innerHeight,
+        height: window.innerHeight*0.45,
         ccm_data: [],
         factors: [
             {value: 'temperature', label: 'temperature'},
@@ -65,69 +66,127 @@ export default{
         factor1: 'temperature',
         factor2: 'rainfall',
         cities: [
-            {value: 'Tokyo', label: '東京', lat: 35.68944, lon: 139.69167},
-            {value: 'Yokohama', label: '横浜', lat: 35.44778, lon: 139.6425},
-            {value: 'Chiba', label: '千葉', lat: 35.60472, lon: 140.12333},
-            {value: 'Gifu', label: '岐阜', lat: 35.39111,lon: 136.72222},
             {value: 'Kyoto', label: '京都', lat: 35.02139, lon: 135.75556},
             {value: 'Oosaka', label: '大阪', lat: 34.68639, lon: 135.52},
-            {value: 'Kobe', label: '神戸', lat: 34.69139, lon: 135.18306},
             {value: 'Nara', label: '奈良', lat: 34.68528, lon: 135.83278},
-            {value: 'Nagoya', label: '名古屋', lat: 35.18028, lon: 136.90667}
+            {value: 'Kobe', label: '神戸', lat: 34.69139, lon: 135.18306},
+            {value: 'Gifu', label: '岐阜', lat: 35.39111,lon: 136.72222},
+            {value: 'Nagoya', label: '名古屋', lat: 35.18028, lon: 136.90667},
+            {value: 'Yokohama', label: '横浜', lat: 35.44778, lon: 139.6425},
+            {value: 'Tokyo', label: '東京', lat: 35.68944, lon: 139.69167},
+            {value: 'Chiba', label: '千葉', lat: 35.60472, lon: 140.12333},
         ],
         city: 'Tokyo',
-        allcities: ''
+        allcities: '',
+        colors: colormap({
+            colormap: 'magma',
+            nshades: 10,
+            format: 'hex',
+            alpha: 1
+        }),
+        polar_data: [],
+        line_data1: [],
+        line_data2: [],
+        ccmChart: null,
     }),
     methods: {
         onClick(e) {
-            this.drawCcmmap()
+            //fetch data from server
             const params = new URLSearchParams()
             params.set('city', this.city)
             params.set('factor1', this.factor1)
             params.set('factor2', this.factor2)
             const url = `http://0.0.0.0:5000/data/${params.toString()}`
             this.requestToServer(url)
+            //fetch local data
+            // this.fetchData()
         },
-        onZoomstart() {
-            this.$refs.ccm.style.opacity = 0
-            console.log('zoom start')
-        },
-        onZoomend() {
-            this.drawCcmmap()
-            this.$refs.ccm.style.opacity = 1
-            console.log('zoom end')
-        },
-        onMovestart() {
-            this.$refs.ccm.style.opacity = 0
-            console.log('move start')
-        },
-        onMoveend() {
-            this.drawCcmmap()
-            this.$refs.ccm.style.opacity = 1
-            console.log('move end');
-        },
-        drawCcmmap() {
+        drawCcmmap(data) {
+            const city_names = ['Kyoto', 'Oosaka', 'Nara', 'Kobe', 'Gifu', 'Nagoya', 'Yokohama', 'Tokyo', 'Chiba']
+            let city_values = []
+            let city_colors = []
+            for(const i in city_names) {
+                const name = city_names[i]
+                city_values.push(data[name])
+                city_colors.push(this.colors[i])
+            }
+            city_colors = city_colors.map(d => (d+'BF'))
+            const tmp_data = {
+                labels: city_names,
+                datasets: [{
+                    data: city_values,
+                    backgroundColor: city_colors
+                }]
+            }
+            //setview
+            for(const i in this.cities) {
+                if(this.cities[i].value == this.city) {
+                    const cen = [this.cities[i].lat, this.cities[i].lon]
+                    this.$refs.basemap.mapObject.panTo(cen)
+                    break
+                }
+            }
+            //draw chart
             this.$refs.ccm.width = this.width
             this.$refs.ccm.height = this.height
-            this.$refs.ccm.getContext('2d').clearRect(0, 0, this.width, this.height)
-            this.cities.forEach(c => {
-                const point = this.$refs.basemap.mapObject.latLngToContainerPoint([c.lat, c.lon])
-                this.$refs.ccm.getContext('2d').fillStyle = '#dc143c'//`hsla(200, 100%, 80%, 1)`
-                this.$refs.ccm.getContext('2d').fillRect(point.x, point.y, 10, 10)
+            const ctx = this.$refs.ccm.getContext('2d')
+            ctx.clearRect(0, 0, this.width, this.height)
+            if(this.ccmChart!=null) this.ccmChart.destroy()
+            this.ccmChart = new Chart(ctx, {
+                data: tmp_data,
+                type: 'polarArea',
             })
         },
-        requestToServer(url) {
+        requestToServer(url) {  // from server
             $('#linechart').empty()
             axios.get(url)
             .then(res => {
                 const data = res.data
                 this.eventHub.$emit('initLinechartScene', data)
+                this.drawCcmmap(data[2])
             })
+        },
+        fetchData() {  // local file
+            //polar data
+            this.polar_data = []
+            fetch('../asset/ccm/ccm.json')
+                .then(res => res.json())
+                .then(data => {
+                    this.polar_data = data[this.city][this.factor1][this.factor2]
+                })
+            this.drawCcmmap(this.polar_data)
+            //line data
+            $('#linechart').empty()
+            this.line_data1 = []
+            this.line_data2 = []
+            fetch(`../asset/json/${this.factor1}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    for(const i in data) {
+                        const d = data[i]
+                        this.line_data1.push({'value': d[this.city], 'date': d.date})
+                    }
+                })
+            fetch(`../asset/json/${this.factor2}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    this.line_data2 = data
+                })
+            Promise.all([this.line_data1, this.line_data2])
+                .then(line_data => {
+                    this.eventHub.$emit('initLinechartScene', line_data)
+                })
         }
     },
     watch: {
     },
     mounted() {
+        const params = new URLSearchParams()
+        params.set('city', this.city)
+        params.set('factor1', this.factor1)
+        params.set('factor2', this.factor2)
+        const url = `http://0.0.0.0:5000/data/${params.toString()}`
+        this.requestToServer(url)
     }
 }
 </script>
@@ -139,22 +198,22 @@ export default{
     }
     .vue2leaflet-map.leaflet-container{
         width: 50%;
-        height: 100%;
-        cursor: crosshair;
-        float: right;
+        height: 45%;
+        cursor: default;
+        float: left;
     }
     #ccm {
-        pointer-events: none;
         position: absolute;
         top: 0;
         left: 0;
-        float: right;
+        float: left;
         transition: 'opacity 0.2s';
-    }
-    #ccm {
         z-index: 1000;
     }
     #linechart {
+        float: left;
+    }
+    .el-select {
         float: left;
     }
 </style>

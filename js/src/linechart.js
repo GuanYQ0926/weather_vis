@@ -1,6 +1,5 @@
 import * as d3 from 'd3'
 import colormap from 'colormap'
-import $ from 'jquery'
 
 
 export default class Linechart{
@@ -17,9 +16,6 @@ export default class Linechart{
             alpha: 1
         })
         this.cities = ['Kyoto', 'Oosaka', 'Nara', 'Kobe', 'Gifu', 'Nagoya', 'Yokohama', 'Tokyo', 'Chiba']
-        this.src_range = {'min': 1000, 'max': -1000}
-        this.dst_range = {'min': 1000, 'max': -1000}
-        this.dst_num = -1
     }
     initScene(data){
         this.src_range = {'min': 1000, 'max': -1000}
@@ -104,7 +100,7 @@ export default class Linechart{
         // draw legend
         const legend = svg.append('svg')
         const g = legend.append('g')
-            .attr('transform', `translate(20, ${this.height+35})`)
+            .attr('transform', `translate(80, ${this.height+35})`)
         for(const i in this.cities) {
             const cell = g.append('g')
                 .attr('class', 'cell')
