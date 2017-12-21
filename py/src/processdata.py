@@ -7,10 +7,10 @@ from skccm.utilities import train_test_split
 
 
 def csvToCMMJson():
-    city_list = ['Kyoto', 'Oosaka', 'Nara', 'Kobe', 'Gifu',
-                 'Nagoya', 'Yokohama', 'Tokyo', 'Chiba']
+    city_list = ['Kobe', 'Kyoto', 'Oosaka', 'Wakayama', 'Nara', 'Otsu',
+                 'Fukui', 'Tsu', 'Gifu', 'Nagoya']
     factor_list = ['cloud', 'rainfall',  # 4
-                   'temperature', 'vaporpressure', 'windspeed']
+                   'temperature', 'vaporpressure', 'windspeed', 'sunlight']
     # sequence of city_list and factor_list is not changable
     dataset = collections.defaultdict(list)
     for factor in factor_list:
@@ -34,8 +34,8 @@ def csvToCMMJson():
                 row_num += 1
             ci += 1
             col_num += col_offset  # change with the csv data
-        dataset[factor] = tmp_data  # {rainfall: {kyoto:[], tokyo:[]}}
-    results = {}  # {Tokyo: {rainfall: {temperature: [kyoto: 1, nagoya: 1]} }}
+        dataset[factor] = tmp_data  # {rainfall: {kyoto:[], Oosaka:[]}}
+    results = {}  # {Nagoya: {rainfall: {temperature: [kyoto: 1, nagoya: 1]} }}
     for city1 in city_list:
         dictionary1 = {}
         for factor1 in factor_list:
@@ -75,35 +75,40 @@ def calculateCCM(data1, data2):
     return sc1, sc2
 
 
-def csvToD3Json(src_file, dst_file, col_offset=3):
-    city_list = ['Kyoto', 'Oosaka', 'Nara', 'Kobe', 'Gifu',
-                 'Nagoya', 'Yokohama', 'Tokyo', 'Chiba']
-    with open(src_file, 'r') as f:
-        lines = csv.reader(f)
-        data = []
-        for line in lines:
-            data.append(line)
-    jsonfile = []
-    row_num = 5
-    while row_num < len(data):
-        col_num = 1
-        ci = 0
-        dictionary = {'date': data[row_num][0]}
-        while col_num < len(data[2]):
-            city = city_list[ci]
-            if data[row_num][col_num] != '':
-                dictionary[city] = float(data[row_num][col_num])
-            else:
-                dictionary[city] = -1
-            ci += 1
-            col_num += col_offset  # change with csv data
-        jsonfile.append(dictionary)
-        row_num += 1
-    with open(dst_file, 'w') as f:
-        json.dump(jsonfile, f)
+def csvToD3Json():
+    city_list = ['Kobe', 'Kyoto', 'Oosaka', 'Wakayama', 'Nara', 'Otsu',
+                 'Fukui', 'Tsu', 'Gifu', 'Nagoya']
+    factor_list = ['cloud', 'rainfall',  # 4
+                   'temperature', 'vaporpressure', 'windspeed', 'sunlight']
+    for factor in factor_list:
+        src_file = '../data/raw/' + factor + '.csv'
+        dst_file = '../data/json/' + factor + '.json'
+        col_offset = 4 if factor == 'rainfall' else 3
+        with open(src_file, 'r', encoding='ISO-8859-1') as f:
+            lines = csv.reader(f)
+            data = []
+            for line in lines:
+                data.append(line)
+        jsonfile = []
+        row_num = 5
+        while row_num < len(data):
+            col_num = 1
+            ci = 0
+            dictionary = {'date': data[row_num][0]}
+            while col_num < len(data[2]):
+                city = city_list[ci]
+                if data[row_num][col_num] != '':
+                    dictionary[city] = float(data[row_num][col_num])
+                else:
+                    dictionary[city] = -1
+                ci += 1
+                col_num += col_offset  # change with csv data
+            jsonfile.append(dictionary)
+            row_num += 1
+        with open(dst_file, 'w') as f:
+            json.dump(jsonfile, f)
 
 
 if __name__ == '__main__':
-    # csvToD3Json('../data/raw/cloud.csv',
-    #             '../data/json/cloud.json')
+    csvToD3Json()
     csvToCMMJson()

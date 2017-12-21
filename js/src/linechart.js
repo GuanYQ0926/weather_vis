@@ -9,13 +9,16 @@ export default class Linechart{
         this.margin = {top: 0.04*this.div_height, right: this.div_width/25, bottom: 0.25*this.div_height, left: this.div_width/24}
         this.width = this.div_width - this.margin.left - this.margin.right
         this.height = this.div_height - this.margin.top - this.margin.bottom
-        this.colors = colormap({
-            colormap: 'magma',
-            nshades: 10,
-            format: 'hex',
-            alpha: 1
-        })
-        this.cities = ['Kyoto', 'Oosaka', 'Nara', 'Kobe', 'Gifu', 'Nagoya', 'Yokohama', 'Tokyo', 'Chiba']
+        // this.colors = colormap({
+        //     colormap: 'magma',
+        //     nshades: 10,
+        //     format: 'hex',
+        //     alpha: 1
+        // })
+        this.colors = ['#E3BA22', '#E58429', '#BD2D28', '#D15A86', '#8E6C8A',
+            '#6B99A1', '#42A5B3', '#0F8C79', '#6BBBA1', '#5C8100']
+
+        this.cities = ['Kobe', 'Kyoto', 'Oosaka', 'Wakayama', 'Nara', 'Otsu', 'Fukui', 'Tsu', 'Gifu', 'Nagoya']
     }
     initScene(data){
         this.src_range = {'min': 1000, 'max': -1000}
@@ -104,9 +107,9 @@ export default class Linechart{
         for(const i in this.cities) {
             const cell = g.append('g')
                 .attr('class', 'cell')
+                .attr('transform', `translate(${50*i}, 0)`)
             cell.append('rect')
                 .attr('class', 'legend')
-                .attr('transform', `translate(${50*i}, 0)`)
                 .attr('width', 35)
                 .attr('height', 12)
                 .attr('fill', this.colors[i])
@@ -114,7 +117,7 @@ export default class Linechart{
                     if(this.dst_num != -1) {
                         this.dst_num = -1
                         const src_num = this.cities.length
-                        d3.selectAll('.line').each(function(dd, ii) {
+                        d3.selectAll('.line').each(function(dd, ii) {  // arrow function not work
                             if(ii != src_num) {
                                 d3.select(this).style('stroke-opacity', 1)
                                 d3.select(this).style('stroke-width', 1)
@@ -138,7 +141,7 @@ export default class Linechart{
                 })
             cell.append('text')
                 .attr('class', 'label')
-                .attr('transform', `translate(${50*i}, 25)`)
+                .attr('transform', 'translate(0, 25)')
                 .text(this.cities[i])
         }
     }

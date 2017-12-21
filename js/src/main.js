@@ -5,7 +5,9 @@ import {
     Dropdown,
     DropdownMenu,
     DropdownItem,
-    Button
+    Button,
+    Form,
+    FormItem,
 } from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import Vue2Leaflet from 'vue2-leaflet'
@@ -17,6 +19,8 @@ Vue.use(Dropdown)
 Vue.use(DropdownMenu)
 Vue.use(DropdownItem)
 Vue.use(Button)
+Vue.use(Form)
+Vue.use(FormItem)
 Vue.component('v-map', Vue2Leaflet.Map)
 Vue.component('v-tilelayer', Vue2Leaflet.TileLayer)
 Vue.component('v-marker', Vue2Leaflet.Marker)

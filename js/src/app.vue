@@ -1,36 +1,49 @@
 <template>
     <div id="app">
-        <el-select v-model="city" filterable placeholder="東京" size="mini" no-match-text="No matching data">
-            <el-option
-                v-for="city in cities"
-                :key="city.value"
-                :label="city.label"
-                :value="city.value">
-            </el-option>
-        </el-select>
-        <el-select v-model="factor1" placeholder="temperature" size="mini">
-            <el-option
-                v-for="factor in factors"
-                :key="factor.value"
-                :label="factor.label"
-                :value="factor.value">
-            </el-option>
-        </el-select>
-        <el-button size="mini" plain @click='onClick'><i class="el-icon-check"></i></el-button>
-        <el-select v-model="allcities" disabled placeholder="all cities" size="mini"></el-select>
-        <el-select v-model="factor2" placeholder="temperature" size="mini">
-            <el-option
-                v-for="factor in factors"
-                :key="factor.value"
-                :label="factor.label"
-                :value="factor.value">
-            </el-option>
-        </el-select>
         <v-map ref="basemap" :zoom="zoom" :center="center">
             <v-tilelayer :url="url"></v-tilelayer>
             <canvas id="ccm" ref="ccm"></canvas>
         </v-map>
+        <el-form :inline="true" class="demo-form-inline" size="mini">
+            <el-form-item label="市町村">
+                <el-select v-model="city" filterable placeholder="岐阜" size="mini" no-match-text="No matching data">
+                    <el-option
+                        v-for="city in cities"
+                        :key="city.value"
+                        :label="city.label"
+                        :value="city.value">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="気象データ">
+                <el-select v-model="factor1" placeholder="temperature" size="mini">
+                    <el-option
+                        v-for="factor in factors"
+                        :key="factor.value"
+                        :label="factor.label"
+                        :value="factor.value">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="市町村">
+                <el-select v-model="allcities" disabled placeholder="他の観測所" size="mini"></el-select>
+            </el-form-item>
+            <el-form-item label="気象データ">
+                <el-select v-model="factor2" placeholder="temperature" size="mini">
+                    <el-option
+                        v-for="factor in factors"
+                        :key="factor.value"
+                        :label="factor.label"
+                        :value="factor.value">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item>
+                <el-button size="mini" plain @click='onClick'>確認</el-button>
+            </el-form-item>
+        </el-form>
         <linechart></linechart>
+        <!-- <sunburst></sunburst> -->
     </div>
 </template>
 
@@ -40,10 +53,12 @@ import $ from 'jquery'
 import colormap from 'colormap'
 import Chart from 'chart.js'
 import Linechart from './components/linechartView.vue'
+// import Sunburst from './components/sunburstView.vue'
 
-export default{
+export default {
     components: {
         linechart: Linechart,
+        // sunburst: Sunburst,
     },
     data: () => ({
         zoom: 8,
@@ -54,29 +69,31 @@ export default{
         //'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
         url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
         width: window.innerWidth/2,
-        height: window.innerHeight*0.45,
+        height: window.innerHeight,
         ccm_data: [],
         factors: [
-            {value: 'temperature', label: 'temperature'},
-            {value: 'rainfall', label: 'rianfall'},
-            {value: 'windspeed', label: 'wind-speed'},
-            {value: 'vaporpressure', label: 'vapor-pressure'},
-            {value: 'cloud', label: 'cloud'}
+            {value: 'temperature', label: '日平均気温'},
+            {value: 'rainfall', label: '降水量'},
+            {value: 'windspeed', label: '日平均風速'},
+            {value: 'vaporpressure', label: '日平均蒸気圧'},
+            {value: 'cloud', label: '日平均雲量'},
+            {value: 'sunlight', label: '日合計全天日射量'},
         ],
         factor1: 'temperature',
         factor2: 'rainfall',
         cities: [
+            {value: 'Kobe', label: '神戸', lat: 34.69139, lon: 135.18306},
             {value: 'Kyoto', label: '京都', lat: 35.02139, lon: 135.75556},
             {value: 'Oosaka', label: '大阪', lat: 34.68639, lon: 135.52},
+            {value: 'Wakayama', label: '和歌山', lat: 34.230411, lon: 135.17081},
             {value: 'Nara', label: '奈良', lat: 34.68528, lon: 135.83278},
-            {value: 'Kobe', label: '神戸', lat: 34.69139, lon: 135.18306},
+            {value: 'Otsu', label: '大津', lat: 35.017754, lon: 135.85471},
+            {value: 'Fukui', label: '福井', lat: 36.064189, lon: 136.219374},
+            {value: 'Tsu', label: '津', lat: 34.718576, lon: 136.505511},
             {value: 'Gifu', label: '岐阜', lat: 35.39111,lon: 136.72222},
             {value: 'Nagoya', label: '名古屋', lat: 35.18028, lon: 136.90667},
-            {value: 'Yokohama', label: '横浜', lat: 35.44778, lon: 139.6425},
-            {value: 'Tokyo', label: '東京', lat: 35.68944, lon: 139.69167},
-            {value: 'Chiba', label: '千葉', lat: 35.60472, lon: 140.12333},
         ],
-        city: 'Tokyo',
+        city: 'Gifu',
         allcities: '',
         colors: colormap({
             colormap: 'magma',
@@ -102,21 +119,13 @@ export default{
             // this.fetchData()
         },
         drawCcmmap(data) {
-            const city_names = ['Kyoto', 'Oosaka', 'Nara', 'Kobe', 'Gifu', 'Nagoya', 'Yokohama', 'Tokyo', 'Chiba']
+            const city_names = ['Kobe', 'Kyoto', 'Oosaka', 'Wakayama', 'Nara', 'Otsu', 'Fukui', 'Tsu', 'Gifu', 'Nagoya']
             let city_values = []
             let city_colors = []
             for(const i in city_names) {
                 const name = city_names[i]
                 city_values.push(data[name])
                 city_colors.push(this.colors[i])
-            }
-            city_colors = city_colors.map(d => (d+'BF'))
-            const tmp_data = {
-                labels: city_names,
-                datasets: [{
-                    data: city_values,
-                    backgroundColor: city_colors
-                }]
             }
             //setview
             for(const i in this.cities) {
@@ -126,6 +135,26 @@ export default{
                     break
                 }
             }
+
+            const tmp_data = {
+                labels: city_names,
+                datasets: [{
+                    label: 'CCM',
+                    fill: true,
+                    data: city_values,
+                    borderColor: 'rgba(255,99,132,1)',
+                    backgroundColor: 'rgba(255,99,132,0.2)',
+                    pointBorderColor: '#fff',
+                    pointBackgroundColor: 'rgba(255,99,132,1)',
+                    pointHoverRadius: 6,
+                }],
+            }
+            const tmp_options = {
+                title: {
+                    display: true,
+                    text: ''
+                }
+            }
             //draw chart
             this.$refs.ccm.width = this.width
             this.$refs.ccm.height = this.height
@@ -133,8 +162,9 @@ export default{
             ctx.clearRect(0, 0, this.width, this.height)
             if(this.ccmChart!=null) this.ccmChart.destroy()
             this.ccmChart = new Chart(ctx, {
+                type: 'radar',
                 data: tmp_data,
-                type: 'polarArea',
+                options: tmp_options,
             })
         },
         requestToServer(url) {  // from server
@@ -187,6 +217,7 @@ export default{
         params.set('factor2', this.factor2)
         const url = `http://0.0.0.0:5000/data/${params.toString()}`
         this.requestToServer(url)
+        // this.eventHub.$emit('initSunburstScene')
     }
 }
 </script>
@@ -196,17 +227,21 @@ export default{
         height: 100%;
         margin: 0;
     }
+    body {
+        font-family: Sans-serif;
+        font-size: 11px;
+    }
     .vue2leaflet-map.leaflet-container{
         width: 50%;
-        height: 45%;
+        height: 100%;
         cursor: default;
-        float: left;
+        float: right;
     }
     #ccm {
         position: absolute;
         top: 0;
         left: 0;
-        float: left;
+        float: right;
         transition: 'opacity 0.2s';
         z-index: 1000;
     }

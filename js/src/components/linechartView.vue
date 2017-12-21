@@ -5,11 +5,11 @@
 <script>
 import Linechart from '../linechart'
 
-export default{
+export default {
     data: () => ({
         lc: new Linechart(),
     }),
-    mounted(){
+    mounted() {
         this.eventHub.$on('initLinechartScene', data => this.lc.initScene(data))
     }
 }
