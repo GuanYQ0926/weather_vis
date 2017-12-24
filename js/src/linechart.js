@@ -1,5 +1,4 @@
 import * as d3 from 'd3'
-import colormap from 'colormap'
 
 
 export default class Linechart{
@@ -9,12 +8,6 @@ export default class Linechart{
         this.margin = {top: 0.04*this.div_height, right: this.div_width/25, bottom: 0.25*this.div_height, left: this.div_width/24}
         this.width = this.div_width - this.margin.left - this.margin.right
         this.height = this.div_height - this.margin.top - this.margin.bottom
-        // this.colors = colormap({
-        //     colormap: 'magma',
-        //     nshades: 10,
-        //     format: 'hex',
-        //     alpha: 1
-        // })
         this.colors = ['#E3BA22', '#E58429', '#BD2D28', '#D15A86', '#8E6C8A',
             '#6B99A1', '#42A5B3', '#0F8C79', '#6BBBA1', '#5C8100']
 

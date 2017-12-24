@@ -67,7 +67,16 @@ class DataResource(Resource):
             with open('../data/ccm/ccm.json', 'r') as f:
                 # {Tokyo: {rainfall: {temperature: [kyoto: 1, nagoya: 1]} }}
                 data = json.load(f)
-                data3 = data[params[0]][params[1]][params[2]]
+                # data3 = data[params[0]][params[1]][params[2]]
+                tmp_dict = data[params[0]]
+                k0 = params[0]
+                # {'cloud':{'rainfall':{'Kyoto':0.1}'}}
+                data3 = []
+                for k1, v1 in tmp_dict.items():  # k1=cloud
+                    for k2, v2 in v1.items():  # k2=rainfall
+                        for k3, v3 in v2.items():  # k3=kyoto
+                            data3.append(
+                                [k0 + '-' + k1 + '-' + k2 + '-' + k3, str(v3)])
             return [data1, data2, data3]
         except:
             abort(404, message="data doesn't exist")
