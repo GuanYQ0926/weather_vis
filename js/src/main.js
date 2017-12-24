@@ -8,6 +8,7 @@ import {
     Button,
     Form,
     FormItem,
+    Slider,
 } from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import Vue2Leaflet from 'vue2-leaflet'
@@ -21,6 +22,7 @@ Vue.use(DropdownItem)
 Vue.use(Button)
 Vue.use(Form)
 Vue.use(FormItem)
+Vue.use(Slider)
 Vue.component('v-map', Vue2Leaflet.Map)
 Vue.component('v-tilelayer', Vue2Leaflet.TileLayer)
 Vue.component('v-marker', Vue2Leaflet.Marker)

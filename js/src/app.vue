@@ -43,6 +43,12 @@
         </div>
         <sunburst></sunburst>
         <linechart></linechart>
+        <div id="slider">
+            <div class="block">
+                <span class="demonstration">Month</span>
+                <el-slider v-model="ccm_date" :step="1" :max="11" :min="0" :format-tooltip="formatTooltip" show-stops></el-slider>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -84,8 +90,11 @@ export default {
         ],
         city: 'Gifu',
         allcities: '',
-        line_data1: [],
-        line_data2: [],
+        ccm_date: 1,
+        month_list: {
+            1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+            7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec',
+        }
     }),
     methods: {
         onClick(e) {
@@ -96,8 +105,6 @@ export default {
             params.set('factor2', this.factor2)
             const url = `http://0.0.0.0:5000/data/${params.toString()}`
             this.requestToServer(url)
-            //fetch local data
-            // this.fetchData()
         },
         requestToServer(url) {  // from server
             $('#linechart').empty()
@@ -106,12 +113,22 @@ export default {
             axios.get(url)
             .then(res => {
                 const data = res.data
-                this.eventHub.$emit('initLinechartScene', data)
+                this.eventHub.$emit('initLinechartScene', [data[0], data[1]])
                 this.eventHub.$emit('initSunburstScene', data[2])
             })
         },
+        formatTooltip(val) {
+            let res = "Hide"
+            if(val != 0) {
+                res = this.month_list[val]
+            }
+            return res
+        }
     },
     watch: {
+        ccm_date(val) {
+            console.log(val)
+        }
     },
     mounted() {
         const params = new URLSearchParams()
@@ -143,7 +160,8 @@ export default {
     #linechart {
         float: left;
     }
-    .el-select {
-        float: left;
+    #slider {
+        float: right;
+        width: 50%;
     }
 </style>
