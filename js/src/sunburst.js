@@ -3,11 +3,8 @@ import * as d3 from 'd3'
 
 export default class Sunburst{
     constructor(){
-        this.div_width = window.innerWidth*0.4
-        this.div_height = window.innerHeight/2
-        //this.margin = {top: 20, right: 20, bottom: 20, left: 20}
-        this.width = this.div_width// - this.margin.left - this.margin.right
-        this.height = this.div_height// - this.margin.top - this.margin.bottom
+        this.width = window.innerWidth*0.4
+        this.height = window.innerHeight/2
         this.max_radius = Math.min(this.width, this.height) / 2
     }
     initScene(data) {
@@ -15,39 +12,21 @@ export default class Sunburst{
         this.renderScene()
     }
     renderScene() {
-        const radius = this.max_radius
-        const width = this.width
-        const height = this.height
+        const width = this.width,
+            height = this.height,
+            radius = this.max_radius
         const b = {w: 75, h: 30, s: 3, t: 10}
-        // Mapping of step names to colors.
-        //['#E3BA22', '#E58429', '#BD2D28', '#D15A86', '#8E6C8A',
-        // '#6B99A1', '#42A5B3', '#0F8C79', '#6BBBA1', '#5C8100']
-        //['#EE6D62', '#F7C652', '#65CB57', '#00BFA5', '#607D8B']
         const colors = {
-            'Kobe': '#bbbbbb',
-            'Kyoto': '#bbbbbb',
-            'Oosaka': '#bbbbbb',
-            'Wakayama': '#bbbbbb',
-            'Nara': '#bbbbbb',
-            'Otsu': '#bbbbbb',
-            'Fukui': '#bbbbbb',
-            'Tsu': '#bbbbbb',
-            'Gifu': '#bbbbbb',
-            'Nagoya': '#bbbbbb',
-            'temperature': '#EE6D62',
-            'rainfall': '#F7C652',
-            'windspeed': '#65CB57',
-            'vaporpressure': '#00BFA5',
-            'cloud': '#607D8B',
+            'Kobe': '#bbbbbb', 'Kyoto': '#bbbbbb', 'Oosaka': '#bbbbbb',
+            'Wakayama': '#bbbbbb', 'Nara': '#bbbbbb', 'Otsu': '#bbbbbb',
+            'Fukui': '#bbbbbb', 'Tsu': '#bbbbbb', 'Gifu': '#bbbbbb',
+            'Nagoya': '#bbbbbb', 'temperature': '#EE6D62', 'rainfall': '#F7C652',
+            'windspeed': '#65CB57', 'vaporpressure': '#00BFA5', 'cloud': '#607D8B',
             'sunlight': '#FAEBD7',
         }
         const legend_colors = {
-            'temperature': '#EE6D62',
-            'rainfall': '#F7C652',
-            'windspeed': '#65CB57',
-            'vaporpressure': '#00BFA5',
-            'cloud': '#607D8B',
-            'sunlight': '#FAEBD7',
+            'temperature': '#EE6D62', 'rainfall': '#F7C652', 'windspeed': '#65CB57',
+            'vaporpressure': '#00BFA5', 'cloud': '#607D8B', 'sunlight': '#FAEBD7',
             'city': '#bbbbbb',
         }
         const div = document.getElementById('chart')
@@ -59,7 +38,7 @@ export default class Sunburst{
             .attr('height', height)
             .append('svg:g')
             .attr('id', 'container')
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+            .attr('transform', `translate(${width/2}, ${height/2})`)
 
         const partition = d3.partition()
             .size([2 * Math.PI, radius * radius])
@@ -69,14 +48,6 @@ export default class Sunburst{
             .endAngle(function(d) { return d.x1  })
             .innerRadius(function(d) { return Math.sqrt(d.y0)  })
             .outerRadius(function(d) { return Math.sqrt(d.y1)  })
-
-        // Use d3.text and d3.csvParseRows so that we do not need to have a header
-        // row, and can receive the csv as an array of arrays.
-        // d3.text('../asset/test.csv', function(text) {
-        //     const csv = d3.csvParseRows(text)
-        //     const json = buildHierarchy(csv)
-        //     createVisualization(json)
-        // })
 
         const json = buildHierarchy(this.data)
         createVisualization(json)
@@ -218,7 +189,7 @@ export default class Sunburst{
 
                 // Merge enter and update selections  set position for all nodes.
             entering.merge(trail).attr('transform', function(d, i) {
-                return 'translate(' + i * (b.w + b.s) + ', 0)'
+                return `translate(${i * (b.w + b.s)}, 0)`
             })
 
             // Now move and update the percentage at the end.
@@ -246,7 +217,7 @@ export default class Sunburst{
                 .data(d3.entries(legend_colors))
                 .enter().append('svg:g')
                 .attr('transform', function(d, i) {
-                    return 'translate(0,' + i * (li.h + li.s) + ')'
+                    return `translate(0, ${i * (li.h + li.s)})`
                 })
 
             g.append('svg:rect')
