@@ -99,11 +99,12 @@ export default {
     methods: {
         onClick(e) {
             //fetch data from server
-            const params = new URLSearchParams()
-            params.set('city', this.city)
-            params.set('factor1', this.factor1)
-            params.set('factor2', this.factor2)
-            const url = `http://0.0.0.0:5000/data/${params.toString()}`
+            // const params = new URLSearchParams()
+            // params.set('city', this.city)
+            // params.set('factor1', this.factor1)
+            // params.set('factor2', this.factor2)
+            // const url = `http://0.0.0.0:5000/data/${params.toString()}`
+            const url = 'http://0.0.0.0:5000/data/city=Gifu&factor1=temperature&factor2=rainfall'
             this.requestToServer(url)
         },
         requestToServer(url) {  // from server
@@ -115,6 +116,9 @@ export default {
                 const data = res.data
                 this.eventHub.$emit('initLinechartScene', [data[0], data[1]])
                 this.eventHub.$emit('initSunburstScene', data[2])
+            })
+            .catch(err => {
+                console.error(err)
             })
         },
         formatTooltip(val) {
@@ -162,6 +166,7 @@ export default {
     }
     #slider {
         float: right;
-        width: 50%;
+        width: 45%;
+        margin-right: 10px;
     }
 </style>

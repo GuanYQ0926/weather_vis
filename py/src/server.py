@@ -53,6 +53,7 @@ class Resource(Resource):
 class DataResource(Resource):
 
     def get(self, parameters):
+        print('request in')
         try:  # params: city&factor1&factor2
             params = parameters.split('&')
             params = [p.split('=')[1] for p in params]
