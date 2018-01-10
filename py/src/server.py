@@ -57,6 +57,7 @@ class DataResource(Resource):
         try:  # params: city&factor1&factor2
             params = parameters.split('&')
             params = [p.split('=')[1] for p in params]
+            print(params)
             with open('../data/json/' + params[1] + '.json', 'r') as f:
                 city = params[0]
                 data = json.load(f)
@@ -76,8 +77,8 @@ class DataResource(Resource):
                 for k1, v1 in tmp_dict.items():  # k1=cloud
                     for k2, v2 in v1.items():  # k2=rainfall
                         for k3, v3 in v2.items():  # k3=kyoto
-                            data3.append(
-                                [k0 + '-' + k1 + '-' + k2 + '-' + k3, str(v3)])
+                            data3.append([k0 + '-' + k1 + '-' + k2 + '-' + k3,
+                                          str(v3[int(params[3]) - 1])])
             return [data1, data2, data3]
         except:
             abort(404, message="data doesn't exist")

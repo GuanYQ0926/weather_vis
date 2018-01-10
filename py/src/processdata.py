@@ -10,11 +10,12 @@ def csvToCMMJson():
     city_list = ['Kobe', 'Kyoto', 'Oosaka', 'Wakayama', 'Nara', 'Otsu',
                  'Fukui', 'Tsu', 'Gifu', 'Nagoya']
     factor_list = ['cloud', 'rainfall',  # 4
-                   'temperature', 'vaporpressure', 'windspeed', 'sunlight']
-    # sequence of city_list and factor_list is not changable
+                   'temperature', 'vaporpressure', 'windspeed']
+    # sequence of city_list and factor_list should be fixed
     dataset = collections.defaultdict(list)
     for factor in factor_list:
         src_file = '../data/raw/' + factor + '.csv'
+        print(factor)
         with open(src_file, 'r', encoding='ISO-8859-1') as f:
             lines = csv.reader(f)
             data = []
@@ -48,10 +49,10 @@ def csvToCMMJson():
                     data1 = np.array(dataset[factor1][city1])
                     data2 = np.array(dataset[factor2][city2])
                     if len(data1) == 0 or len(data2) == 0:
-                        sc1 = [0]
+                        sc1 = [0] * 12
                     else:
                         sc1, _ = calculateCCM(data1, data2)  # sc1 type: list
-                    array[city2] = sc1[0]
+                    array[city2] = sc1
                 dictionary2[factor2] = array
             dictionary1[factor1] = dictionary2
         results[city1] = dictionary1
@@ -62,7 +63,8 @@ def csvToCMMJson():
 def calculateCCM(data1, data2):
     lag = 1
     embed = 2
-    lib_lens = [len(data1)]
+    lib_lens = np.cumsum([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
+    # lib_lens = [len(data1)]
     e1 = ccm.Embed(np.array(data1))
     e2 = ccm.Embed(np.array(data2))
     X1 = e1.embed_vectors_1d(lag, embed)
@@ -79,11 +81,12 @@ def csvToD3Json():
     city_list = ['Kobe', 'Kyoto', 'Oosaka', 'Wakayama', 'Nara', 'Otsu',
                  'Fukui', 'Tsu', 'Gifu', 'Nagoya']
     factor_list = ['cloud', 'rainfall',  # 4
-                   'temperature', 'vaporpressure', 'windspeed', 'sunlight']
+                   'temperature', 'vaporpressure', 'windspeed']
     for factor in factor_list:
         src_file = '../data/raw/' + factor + '.csv'
         dst_file = '../data/json/' + factor + '.json'
         col_offset = 4 if factor == 'rainfall' else 3
+        print(factor)
         with open(src_file, 'r', encoding='ISO-8859-1') as f:
             lines = csv.reader(f)
             data = []
@@ -111,4 +114,4 @@ def csvToD3Json():
 
 if __name__ == '__main__':
     csvToD3Json()
-    csvToCMMJson()
+    # csvToCMMJson()

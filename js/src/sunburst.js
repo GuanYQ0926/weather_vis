@@ -3,9 +3,9 @@ import * as d3 from 'd3'
 
 export default class Sunburst{
     constructor(){
-        this.width = window.innerWidth*0.4
-        this.height = window.innerHeight/2
-        this.max_radius = Math.min(this.width, this.height) / 2
+        this.width = window.innerWidth*0.8*0.3
+        this.height = window.innerHeight*0.6 - 90
+        this.max_radius = Math.min(this.width, this.height) / 3
     }
     initScene(data) {
         this.data = data
@@ -22,11 +22,10 @@ export default class Sunburst{
             'Fukui': '#bbbbbb', 'Tsu': '#bbbbbb', 'Gifu': '#bbbbbb',
             'Nagoya': '#bbbbbb', 'temperature': '#EE6D62', 'rainfall': '#F7C652',
             'windspeed': '#65CB57', 'vaporpressure': '#00BFA5', 'cloud': '#607D8B',
-            'sunlight': '#FAEBD7',
         }
         const legend_colors = {
             'temperature': '#EE6D62', 'rainfall': '#F7C652', 'windspeed': '#65CB57',
-            'vaporpressure': '#00BFA5', 'cloud': '#607D8B', 'sunlight': '#FAEBD7',
+            'vaporpressure': '#00BFA5', 'cloud': '#607D8B',
             'city': '#bbbbbb',
         }
         const div = document.getElementById('chart')
@@ -38,7 +37,7 @@ export default class Sunburst{
             .attr('height', height)
             .append('svg:g')
             .attr('id', 'container')
-            .attr('transform', `translate(${width/2}, ${height/2})`)
+            .attr('transform', `translate(${width/3}, ${height/3})`)
 
         const partition = d3.partition()
             .size([2 * Math.PI, radius * radius])
@@ -56,7 +55,7 @@ export default class Sunburst{
         function createVisualization(json) {
         // Basic setup of page elements.
             initializeBreadcrumbTrail()
-            drawLegend()
+            //drawLegend()
             d3.select('#togglelegend').on('click', toggleLegend)
             // Bounding circle underneath the sunburst, to make it easier to detect
             // when the mouse leaves the parent g.

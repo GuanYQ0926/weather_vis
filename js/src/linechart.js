@@ -1,11 +1,11 @@
 import * as d3 from 'd3'
 
 
-export default class Linechart{
-    constructor(){
-        this.div_width = window.innerWidth/2
-        this.div_height = window.innerHeight/2
-        this.margin = {top: 0.04*this.div_height, right: this.div_width/25, bottom: 0.25*this.div_height, left: this.div_width/24}
+export default class Linechart {
+    constructor() {
+        this.div_width = window.innerWidth*0.8
+        this.div_height = window.innerHeight*0.4
+        this.margin = {top: 0.04*this.div_height, right: this.div_width/25, bottom: 0.35*this.div_height, left: this.div_width/37}
         this.width = this.div_width - this.margin.left - this.margin.right
         this.height = this.div_height - this.margin.top - this.margin.bottom
         this.colors = ['#E3BA22', '#E58429', '#BD2D28', '#D15A86', '#8E6C8A',
@@ -97,10 +97,11 @@ export default class Linechart{
         const legend = svg.append('svg')
         const g = legend.append('g')
             .attr('transform', `translate(80, ${this.height+35})`)
+        const offset = this.width / 12
         for(const i in this.cities) {
             const cell = g.append('g')
                 .attr('class', 'cell')
-                .attr('transform', `translate(${50*i}, 0)`)
+                .attr('transform', `translate(${offset*i}, 0)`)
             cell.append('rect')
                 .attr('class', 'legend')
                 .attr('width', 35)

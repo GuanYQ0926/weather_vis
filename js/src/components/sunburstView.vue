@@ -25,18 +25,13 @@ export default {
 </script>
 
 <style>
-#sidebar {
-  float: right;
-  width: 100px;
-}
-
 #sequence {
   width: 600px;
   height: 70px;
 }
 
 #legend {
-  padding: 10px 0 0 3px;
+  /* padding: 10px 0 0 3px; */
   float: right;
 }
 
@@ -46,7 +41,7 @@ export default {
 }
 
 #chart {
-  position: relative;
+  /* position: relative; */
 }
 
 #chart path {
