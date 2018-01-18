@@ -119,7 +119,7 @@ export default class Sunburst{
             d3.select('#container').selectAll('path').on('mouseover', null)
 
             // Transition each segment to full opacity and then reactivate it.
-            d3.selectAll('path')
+            d3.select('#container').selectAll('path')
                 .transition()
                 .duration(1000)
                 .style('opacity', 1)
