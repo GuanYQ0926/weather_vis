@@ -16,7 +16,7 @@
                                     </el-option>
                                 </el-select>
                             </el-form-item>
-                            <el-form-item label="meteorological data">
+                            <el-form-item label="factor 1">
                                 <el-select v-model="factor1" placeholder="temperature" size="mini">
                                     <el-option
                                         v-for="factor in factors"
@@ -27,7 +27,7 @@
                                 </el-select>
                             </el-form-item>
                             <br/>
-                            <el-form-item label="meteorological data">
+                            <el-form-item label="factor 2">
                                 <el-select v-model="factor2" placeholder="temperature" size="mini">
                                     <el-option
                                         v-for="factor in factors"
@@ -52,7 +52,6 @@
                 <el-container style="height: 100%; width: 80%;">
                     <el-main style="height: 50%;">
                         <sunburst></sunburst>
-                        <japanmap></japanmap>
                     </el-main>
                     <el-footer style="height: 40%;">
                         <linechart></linechart>
@@ -68,37 +67,35 @@ import axios from 'axios'
 import $ from 'jquery'
 import Linechart from './components/linechartView.vue'
 import Sunburst from './components/sunburstView.vue'
-import Japanmap from './components/japanmapView.vue'
 
 export default {
     components: {
         linechart: Linechart,
         sunburst: Sunburst,
-        japanmap: Japanmap,
     },
     data: () => ({
         width: window.innerWidth/2,
         height: window.innerHeight,
         factors: [
-            {value: 'temperature', label: '日平均気温'},
-            {value: 'rainfall', label: '降水量'},
-            {value: 'windspeed', label: '日平均風速'},
-            {value: 'vaporpressure', label: '日平均蒸気圧'},
-            {value: 'cloud', label: '日平均雲量'},
+            {value: 'temperature', label: 'Temperature'},
+            {value: 'rainfall', label: 'Precipitation'},
+            {value: 'windspeed', label: 'Wind Speed'},
+            {value: 'vaporpressure', label: 'Vapor Pressure'},
+            {value: 'cloud', label: 'Cloud Amount'},
         ],
         factor1: 'temperature',
         factor2: 'rainfall',
         cities: [
-            {value: 'Kobe', label: '神戸', lat: 34.69139, lon: 135.18306},
-            {value: 'Kyoto', label: '京都', lat: 35.02139, lon: 135.75556},
-            {value: 'Oosaka', label: '大阪', lat: 34.68639, lon: 135.52},
-            {value: 'Wakayama', label: '和歌山', lat: 34.230411, lon: 135.17081},
-            {value: 'Nara', label: '奈良', lat: 34.68528, lon: 135.83278},
-            {value: 'Otsu', label: '大津', lat: 35.017754, lon: 135.85471},
-            {value: 'Fukui', label: '福井', lat: 36.064189, lon: 136.219374},
-            {value: 'Tsu', label: '津', lat: 34.718576, lon: 136.505511},
-            {value: 'Gifu', label: '岐阜', lat: 35.39111,lon: 136.72222},
-            {value: 'Nagoya', label: '名古屋', lat: 35.18028, lon: 136.90667},
+            {value: 'Kobe', label: 'Kobe', lat: 34.69139, lon: 135.18306},
+            {value: 'Kyoto', label: 'Kyoto', lat: 35.02139, lon: 135.75556},
+            {value: 'Oosaka', label: 'Oosaka', lat: 34.68639, lon: 135.52},
+            {value: 'Wakayama', label: 'Wakayama', lat: 34.230411, lon: 135.17081},
+            {value: 'Nara', label: 'Nara', lat: 34.68528, lon: 135.83278},
+            {value: 'Otsu', label: 'Otsu', lat: 35.017754, lon: 135.85471},
+            {value: 'Fukui', label: 'Fukui', lat: 36.064189, lon: 136.219374},
+            {value: 'Tsu', label: 'Tsu', lat: 34.718576, lon: 136.505511},
+            {value: 'Gifu', label: 'Gifu', lat: 35.39111,lon: 136.72222},
+            {value: 'Nagoya', label: 'Nagoya', lat: 35.18028, lon: 136.90667},
         ],
         city: 'Gifu',
         ccm_date: 1,
@@ -118,17 +115,28 @@ export default {
             const url = `http://0.0.0.0:5000/data/${params.toString()}`
             this.requestToServer(url)
         },
-        requestToServer(url) {  // from server
-            $('#linechart').empty()
-            $('#chart').empty()
-            $('#legend').empty()
-            $('#Japanmap').empty()
+        requestToServer(url, redraw_all=true) {  // from server
+            if(redraw_all) {
+                $('#linechart').empty()
+                $('#chart').empty()
+                $('#legend').empty()
+            }
+            else {
+                $('#chart').empty()
+                $('#legend').empty()
+            }
             axios.get(url)
             .then(res => {
                 const data = res.data
-                this.eventHub.$emit('initLinechartScene', [data[0], data[1]])
-                this.eventHub.$emit('initSunburstScene', data[2])
-                this.eventHub.$emit('initJapanmapScene')
+                if(redraw_all){
+                    this.eventHub.$emit('initLinechartScene', [data[0], data[1]])
+                    this.eventHub.$emit('initSunburstScene', data[2])
+                    //this.eventHub.$emit('initJapanmapScene')
+                }
+                else {
+                    this.eventHub.$emit('initSunburstScene', data[2])
+                }
+
             })
             .catch(err => {
                 console.error(err)
@@ -151,7 +159,7 @@ export default {
             params.set('factor2', this.factor2)
             params.set('month', val)
             const url = `http://0.0.0.0:5000/data/${params.toString()}`
-            this.requestToServer(url)
+            this.requestToServer(url, false)
         }
     },
     mounted() {
@@ -181,11 +189,6 @@ export default {
     #sunburst {
         float: left;
         position: absolute;
-    }
-    #japanmap {
-        float: right;
-        position: relative;
-        z-index: -1;
     }
     #linechart {
         float: left;

@@ -3,9 +3,9 @@ import * as d3 from 'd3'
 
 export default class Sunburst{
     constructor(){
-        this.width = window.innerWidth*0.8*0.3
-        this.height = window.innerHeight*0.6 - 90
-        this.max_radius = Math.min(this.width, this.height) / 3
+        this.width = window.innerWidth*0.8
+        this.height = window.innerHeight*0.6 - 70
+        this.max_radius = Math.min(this.width, this.height) / 2.5
     }
     initScene(data) {
         this.data = data
@@ -15,18 +15,12 @@ export default class Sunburst{
         const width = this.width,
             height = this.height,
             radius = this.max_radius
-        const b = {w: 75, h: 30, s: 3, t: 10}
+        const bread = {w: 75, h: 30, s: 3, t: 10}
         const colors = {
             'Kobe': '#bbbbbb', 'Kyoto': '#bbbbbb', 'Oosaka': '#bbbbbb',
             'Wakayama': '#bbbbbb', 'Nara': '#bbbbbb', 'Otsu': '#bbbbbb',
-            'Fukui': '#bbbbbb', 'Tsu': '#bbbbbb', 'Gifu': '#bbbbbb',
-            'Nagoya': '#bbbbbb', 'temperature': '#EE6D62', 'rainfall': '#F7C652',
-            'windspeed': '#65CB57', 'vaporpressure': '#00BFA5', 'cloud': '#607D8B',
-        }
-        const legend_colors = {
-            'temperature': '#EE6D62', 'rainfall': '#F7C652', 'windspeed': '#65CB57',
-            'vaporpressure': '#00BFA5', 'cloud': '#607D8B',
-            'city': '#bbbbbb',
+            'Fukui': '#bbbbbb', 'Tsu': '#bbbbbb', 'Gifu': '#bbbbbb', 'Nagoya': '#bbbbbb',
+            'rainfall': '#1f77b4', 'windspeed': '#ff7f0e', 'vaporpressure': '#2ca02c', 'cloud': '#d62728', 'temperature': '#9467bd',
         }
         const div = document.getElementById('chart')
         div.innerHTML = '<div id="explanation" style="visibility: hidden;"><span id="percentage"></span><br/></div>'
@@ -37,16 +31,16 @@ export default class Sunburst{
             .attr('height', height)
             .append('svg:g')
             .attr('id', 'container')
-            .attr('transform', `translate(${width/3}, ${height/3})`)
+            .attr('transform', `translate(${height/1.5}, ${height/2.5})`)
 
         const partition = d3.partition()
             .size([2 * Math.PI, radius * radius])
 
         const arc = d3.arc()
-            .startAngle(function(d) { return d.x0  })
-            .endAngle(function(d) { return d.x1  })
-            .innerRadius(function(d) { return Math.sqrt(d.y0)  })
-            .outerRadius(function(d) { return Math.sqrt(d.y1)  })
+            .startAngle(d => d.x0)
+            .endAngle(d => d.x1)
+            .innerRadius(d => Math.sqrt(d.y0))
+            .outerRadius(d => Math.sqrt(d.y1))
 
         const json = buildHierarchy(this.data)
         createVisualization(json)
@@ -55,8 +49,6 @@ export default class Sunburst{
         function createVisualization(json) {
         // Basic setup of page elements.
             initializeBreadcrumbTrail()
-            //drawLegend()
-            d3.select('#togglelegend').on('click', toggleLegend)
             // Bounding circle underneath the sunburst, to make it easier to detect
             // when the mouse leaves the parent g.
             vis.append('svg:circle')
@@ -65,8 +57,8 @@ export default class Sunburst{
 
             // Turn the data into a d3 hierarchy and calculate the sums.
             const root = d3.hierarchy(json)
-                .sum(function(d) { return d.size  })
-                .sort(function(a, b) { return b.value - a.value  })
+                .sum(d => d.size)
+                .sort((a, b) => (b.value - a.value))
 
             // For efficiency, filter nodes to keep only those large enough to see.
             const nodes = partition(root).descendants()
@@ -77,10 +69,10 @@ export default class Sunburst{
             const path = vis.data([json]).selectAll('path')
                 .data(nodes)
                 .enter().append('svg:path')
-                .attr('display', function(d) { return d.depth ? null : 'none'  })
+                .attr('display', d => d.depth ? null : 'none')
                 .attr('d', arc)
                 .attr('fill-rule', 'evenodd')
-                .style('fill', function(d) { return colors[d.data.name]  })
+                .style('fill', d => colors[d.data.name])
                 .style('opacity', 1)
                 .on('mouseover', mouseover)
 
@@ -109,13 +101,12 @@ export default class Sunburst{
             updateBreadcrumbs(sequenceArray, percentageString)
 
             // Fade all the segments.
-            d3.selectAll('path')
+            d3.select('#container').selectAll('path')
                 .style('opacity', 0.3)
 
             // Then highlight only those that are an ancestor of the current segment.
             vis.selectAll('path')
-                .filter(function(node) {
-                    return (sequenceArray.indexOf(node) >= 0)})
+                .filter(node => sequenceArray.indexOf(node) >= 0)
                 .style('opacity', 1)
         }
 
@@ -155,12 +146,12 @@ export default class Sunburst{
         function breadcrumbPoints(d, i) {
             const points = []
             points.push('0,0')
-            points.push(b.w + ',0')
-            points.push(b.w + b.t + ',' + (b.h / 2))
-            points.push(b.w + ',' + b.h)
-            points.push('0,' + b.h)
+            points.push(bread.w + ',0')
+            points.push(bread.w + bread.t + ',' + (bread.h / 2))
+            points.push(bread.w + ',' + bread.h)
+            points.push('0,' + bread.h)
             if (i > 0) { // Leftmost breadcrumb  don't include 6th vertex.
-                points.push(b.t + ',' + (b.h / 2))
+                points.push(bread.t + ',' + (bread.h / 2))
             }
             return points.join(' ')
         }
@@ -180,21 +171,19 @@ export default class Sunburst{
                 .attr('points', breadcrumbPoints)
                 .style('fill', function(d) { return colors[d.data.name]  })
             entering.append('svg:text')
-                .attr('x', (b.w + b.t) / 2)
-                .attr('y', b.h / 2)
+                .attr('x', (bread.w + bread.t) / 2)
+                .attr('y', bread.h / 2)
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'middle')
-                .text(function(d) { return d.data.name })
+                .text(d => d.data.name)
 
                 // Merge enter and update selections  set position for all nodes.
-            entering.merge(trail).attr('transform', function(d, i) {
-                return `translate(${i * (b.w + b.s)}, 0)`
-            })
+            entering.merge(trail).attr('transform', (d, i) => `translate(${i * (bread.w + bread.s)}, 0)`)
 
             // Now move and update the percentage at the end.
             d3.select('#trail').select('#endlabel')
-                .attr('x', (nodeArray.length + 0.5) * (b.w + b.s))
-                .attr('y', b.h / 2)
+                .attr('x', (nodeArray.length + 0.5) * (bread.w + bread.s))
+                .attr('y', bread.h / 2)
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'middle')
                 .text(percentageString)
@@ -203,55 +192,15 @@ export default class Sunburst{
                 .style('visibility', '')
         }
 
-        function drawLegend() {
-            // Dimensions of legend item: width, height, spacing, radius of rounded rect.
-            const li = {
-                w: 75, h: 30, s: 3, r: 3
-            }
-            const legend = d3.select('#legend').append('svg:svg')
-                .attr('width', li.w)
-                .attr('height', d3.keys(legend_colors).length * (li.h + li.s))
-
-            const g = legend.selectAll('g')
-                .data(d3.entries(legend_colors))
-                .enter().append('svg:g')
-                .attr('transform', function(d, i) {
-                    return `translate(0, ${i * (li.h + li.s)})`
-                })
-
-            g.append('svg:rect')
-                .attr('rx', li.r)
-                .attr('ry', li.r)
-                .attr('width', li.w)
-                .attr('height', li.h)
-                .style('fill', function(d) { return d.value })
-
-            g.append('svg:text')
-                .attr('x', li.w / 2)
-                .attr('y', li.h / 2)
-                .attr('dy', '0.35em')
-                .attr('text-anchor', 'middle')
-                .text(function(d) {return d.key})
-        }
-
-        function toggleLegend() {
-            const legend = d3.select('#legend')
-            if (legend.style('visibility') == 'hidden') {
-                legend.style('visibility', '')
-            }
-            else {
-                legend.style('visibility', 'hidden')
-            }
-        }
         // Take a 2-column CSV and transform it into a hierarchical structure suitable
         // for a partition layout. The first column is a sequence of step names, from
         // root to leaf, separated by hyphens. The second column is a count of how
         // often that sequence occurred.
-        function buildHierarchy(csv) {
+        function buildHierarchy(json) {
             const root = {'name': 'root', 'children': []}
-            for (let i = 0; i < csv.length; i++) {
-                const sequence = csv[i][0]
-                const size = +csv[i][1]
+            for (let i = 0; i < json.length; i++) {
+                const sequence = json[i][0]
+                const size = +json[i][1]
                 if (isNaN(size)) { // e.g. if this is a header row
                     continue
                 }

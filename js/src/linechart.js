@@ -3,9 +3,9 @@ import * as d3 from 'd3'
 
 export default class Linechart {
     constructor() {
-        this.div_width = window.innerWidth*0.8
+        this.div_width = window.innerWidth*0.75
         this.div_height = window.innerHeight*0.4
-        this.margin = {top: 0.04*this.div_height, right: this.div_width/25, bottom: 0.35*this.div_height, left: this.div_width/37}
+        this.margin = {top: 0.04*this.div_height, right: this.div_width/25, bottom: 0.35*this.div_height, left: this.div_width/35}
         this.width = this.div_width - this.margin.left - this.margin.right
         this.height = this.div_height - this.margin.top - this.margin.bottom
         this.colors = ['#E3BA22', '#E58429', '#BD2D28', '#D15A86', '#8E6C8A',

@@ -1,7 +1,6 @@
 <template>
     <div id="sunburst">
         <div id="sequence"></div>
-        <div id="legend"></div>
         <div id="chart">
             <div id="explanation" style="visibility: hidden;">
                 <span id="percentage"></span><br/>
@@ -21,27 +20,21 @@ export default {
         this.eventHub.$on('initSunburstScene', data => this.sb.initScene(data))
     }
 }
-
 </script>
 
 <style>
 #sequence {
   width: 600px;
-  height: 70px;
+  height: 55px;
 }
 
-#legend {
-  /* padding: 10px 0 0 3px; */
-  float: right;
-}
-
-#sequence text, #legend text {
+#sequence text {
   font-weight: 600;
   fill: #fff;
 }
 
 #chart {
-  /* position: relative; */
+  position: relative;
 }
 
 #chart path {
@@ -50,8 +43,8 @@ export default {
 
 #explanation {
   position: absolute;
-  top: 110px;
-  left: 190px;
+  top: 120px;
+  left: 150px;
   width: 140px;
   text-align: center;
   color: #666;

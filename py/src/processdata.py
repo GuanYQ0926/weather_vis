@@ -14,7 +14,7 @@ def csvToCMMJson():
     # sequence of city_list and factor_list should be fixed
     dataset = collections.defaultdict(list)
     for factor in factor_list:
-        src_file = '../data/raw/' + factor + '.csv'
+        src_file = '../data/raw/2007/' + factor + '.csv'
         print(factor)
         with open(src_file, 'r', encoding='ISO-8859-1') as f:
             lines = csv.reader(f)
@@ -24,14 +24,18 @@ def csvToCMMJson():
         tmp_data = collections.defaultdict(list)
         col_num = 1
         ci = 0
-        col_offset = 4 if factor == 'rainfall' else 3
+        col_offset = 4 if factor == 'rainfall' else 3  # need adjust
+        col_offset = 2 if factor == 'rainfall' else 1  # ...
         while col_num < len(data[2]):
-            row_num = 5
+            row_num = 5  # need adjust
+            row_num = 5 if factor == 'rainfall' else 4  # ...
             while row_num < len(data):
                 # data[2][col_num]
                 if data[row_num][col_num] != '':
                     tmp_data[city_list[ci]].append(
                         float(data[row_num][col_num]))
+                else:
+                    tmp_data[city_list[ci]].append(-1)
                 row_num += 1
             ci += 1
             col_num += col_offset  # change with the csv data
@@ -56,7 +60,7 @@ def csvToCMMJson():
                 dictionary2[factor2] = array
             dictionary1[factor1] = dictionary2
         results[city1] = dictionary1
-    with open('../data/ccm/ccm.json', 'w') as f:
+    with open('../data/ccm/2007/ccm.json', 'w') as f:
         json.dump(results, f)
 
 
@@ -83,8 +87,8 @@ def csvToD3Json():
     factor_list = ['cloud', 'rainfall',  # 4
                    'temperature', 'vaporpressure', 'windspeed']
     for factor in factor_list:
-        src_file = '../data/raw/' + factor + '.csv'
-        dst_file = '../data/json/' + factor + '.json'
+        src_file = '../data/raw/2007/' + factor + '.csv'
+        dst_file = '../data/json/2007/' + factor + '.json'
         col_offset = 4 if factor == 'rainfall' else 3
         print(factor)
         with open(src_file, 'r', encoding='ISO-8859-1') as f:
@@ -113,5 +117,5 @@ def csvToD3Json():
 
 
 if __name__ == '__main__':
-    csvToD3Json()
-    # csvToCMMJson()
+    # csvToD3Json()
+    csvToCMMJson()
