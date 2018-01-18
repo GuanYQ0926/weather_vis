@@ -26,7 +26,7 @@ export default class Sunburst{
         div.innerHTML = '<div id="explanation" style="visibility: hidden;"><span id="percentage"></span><br/></div>'
         // Total size of all segments  we set this later, after loading the data.
         let totalSize = 0
-        const vis = d3.select('#chart').append('svg:svg')
+        const vis = d3.select('#chart').append('svg')
             .attr('width', width)
             .attr('height', height)
             .append('svg:g')
@@ -51,7 +51,7 @@ export default class Sunburst{
             initializeBreadcrumbTrail()
             // Bounding circle underneath the sunburst, to make it easier to detect
             // when the mouse leaves the parent g.
-            vis.append('svg:circle')
+            vis.append('circle')
                 .attr('r', radius)
                 .style('opacity', 0)
 
@@ -116,7 +116,7 @@ export default class Sunburst{
             d3.select('#trail')
                 .style('visibility', 'hidden')
             // Deactivate all segments during transition.
-            d3.selectAll('path').on('mouseover', null)
+            d3.select('#container').selectAll('path').on('mouseover', null)
 
             // Transition each segment to full opacity and then reactivate it.
             d3.selectAll('path')
@@ -132,12 +132,12 @@ export default class Sunburst{
 
         function initializeBreadcrumbTrail() {
             // Add the svg area.
-            const trail = d3.select('#sequence').append('svg:svg')
+            const trail = d3.select('#sequence').append('svg')
                 .attr('width', width)
                 .attr('height', 50)
                 .attr('id', 'trail')
                 // Add the label at the end, for the percentage.
-            trail.append('svg:text')
+            trail.append('text')
                 .attr('id', 'endlabel')
                 .style('fill', '#000')
         }
@@ -165,12 +165,12 @@ export default class Sunburst{
             // Remove exiting nodes.
             trail.exit().remove()
             // Add breadcrumb and label for entering nodes.
-            const entering = trail.enter().append('svg:g')
+            const entering = trail.enter().append('g')
 
-            entering.append('svg:polygon')
+            entering.append('polygon')
                 .attr('points', breadcrumbPoints)
                 .style('fill', function(d) { return colors[d.data.name]  })
-            entering.append('svg:text')
+            entering.append('text')
                 .attr('x', (bread.w + bread.t) / 2)
                 .attr('y', bread.h / 2)
                 .attr('dy', '0.35em')
